@@ -26,5 +26,28 @@ Overlays
 Bump verze
 1) upvarime dev/kustomize.yaml -> zvysime verzi + upravime message
 2) kubectl apply -k kustomize/demo/overlays/dev -> rovnou se nasadi, neni potreba rollout restart -> protoze configmapGenerator dela novy hash configmapy -> takze ma nove jmeno coz meni vysledny deployment.yaml Kubernetes detekuje zmenu a udela sam rollout
-          
+
+----
+Helm - install, update, rollback
+1) stahneme chart: helm repo add podinfo https://stefanprodan.github.io/podinfo
+2) helm repo update -> basically nugget restore
+3) helm show values podinfo/podinfo | more ---> vypíše váchozí values.yaml chartu -> co vse lze nastavit 
+    -> my budeme nastavovat replicaCount a ui: -> message
+4) helm template pi podinfo/podinfo --set replicaCount=2 | more ---> --set je override values.yaml 
+    -> vysledkem je yaml file -> nic se nenasazuje zatím
+    -> takhle se s tím pracuje v Dawiso -> udela se template a ta se aplikuje, nedela se install
+5) helm install pi podinfo/podinfo -n podinfo --create-namespace --set replicaCount=2
+    -> tohle je install chartu do naseho namespace podinfo s override na replicaCount
+    -> vytvori revizi 1
+6) helm upgrade pi podinfo/podinfo -n podinfo --set replicaCount=3 --set ui.message="Ahoj Dawiso" --> novy render s novymi values
+    -> aplikuje se + vytvori se revize 2
+    -> nededi predchozi set -> takze kdybych nensatavil replicaCount pouzil by se default
+7) helm history pi -n podinfo -> vypise revize
+8) helm rollback pi 1 -n podinfo -> rollback na status z revize 1
+    -> udela novou revize 3 -> revize se neprepisuji, vzdy pribyvaji
+9) helm uninstall pi -n podinfo -> smaze vse co release vytvoril vcetne revizi -> namespace zustane
+
+v Dawiso se pouziva helm jen jako renderer pro argocd -> helm template
+
+----
 
