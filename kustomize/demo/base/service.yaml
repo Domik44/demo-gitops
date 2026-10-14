@@ -1,0 +1,28 @@
+# Service = stálá adresa před měnící se sadou podů. Pody vznikají a zanikají a mají pokaždé jinou IP;
+# Service má jednu stálou IP (ClusterIP) a DNS jméno:
+#   dawiso-demo-service.demo.svc.cluster.local   (uvnitř stejného namespace stačí "dawiso-demo-service")
+# Provoz rozkládá mezi všechny pody, které jsou Ready.
+# V Dawiso takhle backend volá třeba alloy.alloy.svc.cluster.local:4317 (Service "alloy" v namespace "alloy").
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: dawiso-demo-service
+
+spec:
+  # Na které pody posílat provoz: všechny pody v namespace s labelem app=dawiso-demo.
+  # Service o Deploymentu neví; spojuje je jen tenhle label.
+  # (Kdyby běžely dva Deploymenty s pody se stejným labelem, Service by posílala provoz do obou.)
+  selector:
+    app: dawiso-demo
+
+  # type tu není, takže platí výchozí ClusterIP = dostupná jen zevnitř clusteru.
+  # Z Windows se k ní dostaneš přes "kubectl port-forward -n demo svc/dawiso-demo-service 8082:80".
+  # (Ven do internetu se v Dawiso aplikace publikují přes Envoy Gateway a HTTPRoute, ne přes Service.)
+
+  ports:
+  # port = na čem poslouchá Service (http://dawiso-demo-service:80).
+  - port: 80
+    # targetPort = kam to přepošle v podu, tedy containerPort aplikace.
+    targetPort: 5100

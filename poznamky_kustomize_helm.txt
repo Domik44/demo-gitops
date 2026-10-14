@@ -1,0 +1,30 @@
+Vytvoreni base kustomize
+1) udelali jsme slozku kustomize/demo/base
+2) zde jsme zkopirovali deployment a service
+    -> smazali jsme jim namespace a u image jsme smazali tag verze
+3) vytvorili base kustomization.yaml -> tvori nejaky zaklad, ktery je stejny pro vsechny nase envy co nam pobezi -> dev a prod
+    -> nema namespace -> to je to co budeme nastavovat + image verzi
+    -> ma resources na deployment a service
+    -> pouziva config generator na generovani promennych -> ted jen prazdna config mapa -> dulezite pak pro overlays
+4) kubectl kustomize kustomize\demo\base -> vysledkem kustomize je vzdy yaml file slozeny z resources a vyplneny o veci -> pozdeji pathce
+    -> zde se nam slozil service + deployment + configmap z config generatoru
+
+------
+Overlays
+1) vytvori se slozky pro kazde prostredi -> demo/overlays/{prod/dev}
+2) kazda ma pak vlastni kustomization.yaml se svymi patches -> svymi specifickymi upravami + resources nastavene na base
+    -> tady pro nas 
+        - namespace -> dawiso-demo-dev a dawiso-demo-prod
+        - image tag
+        - promenne do configmapy
+    -> ma jeste nastavene replicas individualni !!
+3) kubectl kustomize kustomize\demo\overlays\prod -> zase vypise finalni yaml uz poskladany s pathces
+4) vytvorime namespace (demo jsme smazali) -> kubectl create namespace dawiso-dev
+5) kubectl apply -k kustomize/demo/overlays/dev --> aplikujeme overlay -> rovnou se nasadi a vytvori se pod
+
+----
+Bump verze
+1) upvarime dev/kustomize.yaml -> zvysime verzi + upravime message
+2) kubectl apply -k kustomize/demo/overlays/dev -> rovnou se nasadi, neni potreba rollout restart -> protoze configmapGenerator dela novy hash configmapy -> takze ma nove jmeno coz meni vysledny deployment.yaml Kubernetes detekuje zmenu a udela sam rollout
+          
+

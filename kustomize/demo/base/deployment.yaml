@@ -1,0 +1,93 @@
+# Deployment = "chci, aby běželo N kopií téhle aplikace v téhle verzi".
+# Neběží sám; vytvoří ReplicaSet a ten vytvoří Pody. Při změně šablony podu (image, env, ...)
+# vznikne nový ReplicaSet a pody se postupně vymění (rolling update). Starý ReplicaSet zůstane
+# se 0 replikami kvůli "kubectl rollout undo". (Dawiso backend má revisionHistoryLimit: 0,
+# takže tam undo nejde a rollback se dělá přes Git a Argo CD.)
+# Šablona Dawiso backendu: C:\Projects\DW\infra-ref\helm\Dawiso\templates\deployment-backend.yaml
+
+# Deployment patří do API skupiny "apps", proto apps/v1 (ne jen v1 jako ConfigMap).
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  # Labely samotného Deploymentu. Slouží pro hledání a filtrování (kubectl get deploy -l app=dawiso-demo),
+  # na chod podů nemají vliv.
+  labels:
+    app: dawiso-demo
+  # Jméno = totožnost. Když ho změníš a dáš apply, vznikne DRUHÝ Deployment, starý se nepřejmenuje.
+  name: dawiso-demo-deployment
+# spec = požadovaný stav. Controller ho neustále porovnává se skutečností a dorovnává rozdíly.
+spec:
+  # Kolik podů má běžet. Smažeš-li jeden, controller hned vytvoří nový.
+  replicas: 2
+
+  # Podle čeho Deployment pozná "své" pody. Musí sedět na labely v template.metadata.labels níže.
+  # Po vytvoření Deploymentu už selector nejde změnit.
+  selector:
+    matchLabels:
+      app: dawiso-demo
+
+  # template = šablona podu. Každý pod vytvořený tímhle Deploymentem vypadá přesně takhle.
+  # Jakákoli změna uvnitř template = nový rollout.
+  template:
+    metadata:
+      # Labely podů. Podle nich je najde selector výše A Service (service.yaml, spec.selector).
+      # Proto label označuje aplikaci (dawiso-demo), ne konkrétní objekt.
+      labels:
+        app: dawiso-demo
+    spec:
+      # Seznam kontejnerů v podu. Obvykle jeden; víc jen když spolu musí sdílet síť/disk (sidecar).
+      containers:
+      - name: dawiso-demo-container
+
+        # Image a tag. Tag je verze, kterou nasazuješ; změna tagu = rollout nové verze.
+        # V Dawiso tag do values zapisuje Argo CD Image Updater commitem do argocd-prod.
+        image: dawiso-demo
+
+        # IfNotPresent = použij image, který už na uzlu je, a stahuj jen když chybí.
+        # Nutné pro kind: image jsme do uzlů nahráli přes "kind load", v žádné registry není.
+        # (Always by se ho pokusil stáhnout z Docker Hubu a skončil v ImagePullBackOff.)
+        imagePullPolicy: IfNotPresent
+
+        # Port, na kterém appka v kontejneru poslouchá (ASPNETCORE_HTTP_PORTS=5100 v Dockerfile).
+        # Je to hlavně dokumentace; provoz na něj posílá Service přes targetPort.
+        ports:
+          - containerPort: 5100
+
+        # envFrom = načti VŠECHNY klíče z ConfigMapy jako proměnné prostředí.
+        # Alternativa je "env:" s jednotlivými proměnnými, tak to dělá Dawiso backend.
+        envFrom:
+          - configMapRef:
+              name: dawiso-demo-configmap
+
+        # Readiness = "může tenhle pod dostávat provoz?". Dokud neodpoví 200, Service mu nic nepošle
+        # a pod se ukazuje jako 0/1. Při rolloutu se nový pod nezapočítá, dokud není Ready,
+        # takže rozbitá verze nesundá tu běžící (vyzkoušíš v kroku 2.6a).
+        readinessProbe:
+          httpGet:
+            path: /api/health/check
+            port: 5100
+          # Ptej se každých 5 sekund.
+          periodSeconds: 5
+
+        # Liveness = "žije proces, nezasekl se?". Když opakovaně selže, kubelet kontejner RESTARTUJE.
+        # Dawiso backend liveness nemá, má jen readiness.
+        livenessProbe:
+          httpGet:
+            path: /api/health/check
+            port: 5100
+          # Prvních 10 s po startu se neptej (aplikace se teprve rozbíhá), jinak by ji zabil hned při startu.
+          initialDelaySeconds: 10
+
+        resources:
+          # requests = kolik si pod "rezervuje". Scheduler ho dá jen na uzel, kde je tolik volného místa.
+          requests:
+            # 50m = 50 milicore = 5 % jednoho CPU jádra.
+            cpu: 50m
+            # Mi = mebibajty.
+            memory: 64Mi
+          # limits = strop. Paměť nad limit = OOMKilled (jádro proces zabije, exit code 137).
+          # CPU limit tu záměrně není: překročení CPU by znamenalo jen zpomalení (throttling), ne pád.
+          # V Dawiso hodnoty určuje resourceProfile tenanta (např. "large", "xl") v helm chartu.
+          limits:
+            memory: 256Mi
