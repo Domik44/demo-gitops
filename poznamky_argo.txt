@@ -19,5 +19,10 @@ Setup app-of-apps
 4) kubectl apply -f .\root-app.yaml -> aplikujeme root -> posledni apply co delame, o zbytek uz by se melo starat argo
 5) argocd app sync dawiso-demo-prod-app ->  rucni sync, manualni sync prod s tim co je v gitu
 
+-> dodatek -> argocd app get root-app --refresh  
+
+POZOR -> mel jsem chybku v sync options -> davat pozor ze za - musi byt mezera a na setting=value ne setting: value 
+    -> chyby jsem opravil pushnul fixes a sync uz ok
+
 Poznamka!
 - do apps nic vic nedavat -> vse co se tam da se kvuli recurse bere jako objekt clusteru !!!!
