@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: dawiso-demo-test-configmap
-data:
-  test: "smaz me"

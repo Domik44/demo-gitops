@@ -35,3 +35,13 @@ Poznamka!
  3) sync produ-> 
         - argocd app sync dawiso-demo-prod-app  -> sync skrz cli nebo muzeme i skrz ui
         - argocd app wait dawiso-demo-prod-app --health -> kontrola
+
+----
+
+Prune a Rollout
+1) udelame v base test configmap
+2) pridame do kustomize do resources a push 
+3) v UI vidime prod out of sync, dev ma novou test configmap -> dame sync
+4) smazeme test soubor a push --> v dev zmizi configmap sama na prod bude mit mark ze bude smazana -> to dela prune, kdyby nebyl nastaveny, tak tam configmap zustane
+
+5) 
