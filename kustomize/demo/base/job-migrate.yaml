@@ -6,7 +6,7 @@ metadata:
     argocd.argoproj.io/hook: PreSync # Znamena ze se pousti pred syncem
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation # znamena ze se stary job smaze pred behem dalsihos
 spec:
-  backofflimit: 0
+  backoffLimit: 0
   template:
     spec:
       restartPolicy: Never # pri chybe nic neopakujeme
