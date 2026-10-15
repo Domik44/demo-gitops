@@ -15,4 +15,9 @@ Setup app-of-apps
     - nastaveni source a destination
     - nastaveni syncPolicy
 2) vytvoreni per env applications -> dawiso-demo-dev-app.yaml a dawiso-demo-prod-app.yaml
-3)  
+3)  pushnuti na github
+4) kubectl apply -f .\root-app.yaml -> aplikujeme root -> posledni apply co delame, o zbytek uz by se melo starat argo
+5) argocd app sync dawiso-demo-prod-app ->  rucni sync, manualni sync prod s tim co je v gitu
+
+Poznamka!
+- do apps nic vic nedavat -> vse co se tam da se kvuli recurse bere jako objekt clusteru !!!!
