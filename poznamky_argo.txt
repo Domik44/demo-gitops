@@ -43,5 +43,17 @@ Prune a Rollout
 2) pridame do kustomize do resources a push 
 3) v UI vidime prod out of sync, dev ma novou test configmap -> dame sync
 4) smazeme test soubor + odstranit resources z kustomization a push --> v dev zmizi configmap sama na prod bude mit mark ze bude smazana -> to dela prune, kdyby nebyl nastaveny, tak tam configmap zustane
+    -> skrz ui sync bylo potreba nastavit prune jako setting a potvrdit
 
-5) 
+5) dame newTag na nevalidni verzi a push
+6) dev je sice synced ale progressing -> mame dva pody (repl je 1), jeden je ten stary a furt ma svou starou verzi druhy je nefunkcni novy
+    -> readiness neni splnena, takze stary existuje a to do doby dokud novy neni ready
+7) udelali jsme git revert -> vse je pri starem
+
+-> argo rolback by tady neomohl, pri auto updatech je git SoT, takze by se to zase predelalo na 9.9.9
+
+----
+
+Migrace jako PreSync hook
+1) vytvorime job -> base/job-migrate.yaml
+2) 

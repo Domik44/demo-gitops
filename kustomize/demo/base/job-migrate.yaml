@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job # objeckt pro ulohu ktera dobehne a skonci
+metadata:
+  name: dawiso-demo-migrate-job
+  annotations: 
+    argocd.argoproj.io/hook: PreSync # Znamena ze se pousti pred syncem
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation # znamena ze se stary job smaze pred behem dalsihos
+spec:
+  backofflimit: 0
+  template:
+    spec:
+      restartPolicy: Never # pri chybe nic neopakujeme
+      containers:
+      - name: dawiso-demo-migrate-container
+        image: busybox:1.36
+        command: ["sh", "-c", "echo 'migrace schematu pro novou verzi'; sleep 5"]
