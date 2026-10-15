@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
+  - test-configmap.yaml
 configMapGenerator:
   - name: dawiso-demo-configmap
     literals:

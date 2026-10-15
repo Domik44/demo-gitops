@@ -26,3 +26,12 @@ POZOR -> mel jsem chybku v sync options -> davat pozor ze za - musi byt mezera a
 
 Poznamka!
 - do apps nic vic nedavat -> vse co se tam da se kvuli recurse bere jako objekt clusteru !!!!
+
+----
+
+ Bump verze:
+ 1) v dev/kustomization prod/kustomization.yaml -> newTag na novou verzi
+ 2) push -> dev je synced, prod stare na stare verzi, ma diff -> argocd app diff dawiso-demo-prod-app --> ale nefunguje protoze nemam diff v powershellu
+ 3) sync produ-> 
+        - argocd app sync dawiso-demo-prod-app  -> sync skrz cli nebo muzeme i skrz ui
+        - argocd app wait dawiso-demo-prod-app --health -> kontrola
