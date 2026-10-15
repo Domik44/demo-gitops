@@ -16,7 +16,7 @@ spec:
     namespace: demo-prod # prod namespace
   syncPolicy: # Nema automated -> na prod chceme nasazovat manualne!!!
     syncOptions:
-      -CreateNamespace=true
+      - CreateNamespace=true
     retry: # 
       limit: 5
       backoff:
