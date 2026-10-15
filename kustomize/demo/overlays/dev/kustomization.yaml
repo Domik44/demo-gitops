@@ -5,7 +5,8 @@ resources:
   - ../../base
 images:
   - name: dawiso-demo
-    newTag: 1.2.0
+    newTag: 9.9.9
+    # newTag: 1.2.0
 replicas:
   - name: dawiso-demo-deployment
     count: 1
