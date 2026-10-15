@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dawiso-demo-dev-app
+  namespace: argocd
+  finalizers: # tohle zajistuje ze po smazani application se smaze i deployment v clusteru
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default # urcuje z jakych repozitaru a do jakych namepsaces mze aplikace nasazovat
+  source: 
+    repoURL: https://github.com/Domik44/demo-gitops
+    targetRevision: HEAD # bereme z vychozi vetve repa
+    path: kustomize/demo/overlays/dev # nase dev appka
+  destination:
+    server: https://kubernetes.default.svc # oznacuje ze pracujeme v tomhle clusteru a nenasazujeme do jineho
+    namespace: demo-dev # dev namespace
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      -CreateNamespace: true
+    retry: # 
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m0s

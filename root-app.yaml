@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-app
+  namespace: argocd
+spec:
+  project: default # -> single cluster -> lze definovat i vice clusters
+  source:
+    repoURL: https://github.com/Domik44/demo-gitops
+    targetRevision: HEAD
+    path: apps # -> tohle znamena, ze to sleduje rekurizvne apps slozku tady v repu !
+    directory: 
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc # tohle by melo byt nase appka pro kterou delame ty automaticke updates?
+    namespace: argocd # tohle je root a ma videt na sve applications proto tento namespace
+  syncPolicy: # TOTO je dulezite, defaultne jsou ty hlavni vyhody argo vyple ! 
+    automated:
+      prune: true
+      selfHeal: true

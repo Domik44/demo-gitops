@@ -1,0 +1,18 @@
+Instalace argo do clusteru
+1) vytvoreni namespace: kubectl create namespace argocd
+2) apply: kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+3) zjisteni service: kubectl get service -n argocd
+4) port forward abychom se prihlasili: kubectl port-forward svc/argocd-server 8080:443 -n argocd  
+5) prihlaseni -> usr: admin pwd -> se musi ziskat ze secret -> argocd admin initial-password -n argocd
+
+
+----
+
+Setup app-of-apps
+1) vytvoreni root application -> root-app.yaml
+    -> nastaveni rekurze na slozku apps -> to jsou dalsi application yamly co se do toho zapouzdruji -> mame vic envs -> pro kazdy vlastni application yaml
+    - kind application  
+    - nastaveni source a destination
+    - nastaveni syncPolicy
+2) vytvoreni per env applications -> dawiso-demo-dev-app.yaml a dawiso-demo-prod-app.yaml
+3)  
