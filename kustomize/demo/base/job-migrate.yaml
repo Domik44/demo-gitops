@@ -13,4 +13,4 @@ spec:
       containers:
       - name: dawiso-demo-migrate-container
         image: busybox:1.36
-        command: ["sh", "-c", "echo 'migrace schematu pro novou verzi'; sleep 5"]
+        command: ["sh", "-c", "echo 'migrace selhala';exit 1"]

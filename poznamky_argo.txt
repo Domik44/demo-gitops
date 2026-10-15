@@ -55,5 +55,5 @@ Prune a Rollout
 ----
 
 Migrace jako PreSync hook
-1) vytvorime job -> base/job-migrate.yaml + pridame do resources v kustomization
+1) vytvorime job -> base/job-migrate.yaml + pridame do resources v kustomization --> pozor hooky nevyvolavaji diff, takze je treba manual sync!!
 2) 

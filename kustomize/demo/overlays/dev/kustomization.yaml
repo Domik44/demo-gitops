@@ -13,4 +13,4 @@ configMapGenerator:
   - name: dawiso-demo-configmap
     behavior: merge # Patch configu -> je to merge, takze jen to co je jinak zde oproti base se bere tady a zbytek z base
     literals:
-      - Demo__Message=Ahoj z DEV v2
+      - Demo__Message=Ahoj z DEV v3
