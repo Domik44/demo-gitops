@@ -56,4 +56,5 @@ Prune a Rollout
 
 Migrace jako PreSync hook
 1) vytvorime job -> base/job-migrate.yaml + pridame do resources v kustomization --> pozor hooky nevyvolavaji diff, takze je treba manual sync!!
-2) 
+2) job rozbijeme exit 1 commandem + uprava overlay dev aby bylo co nasadit
+3) pozorujeme ze novy pod se nevytvori a stary zustane protoze to job rozbil -> v Dawiso takhle pousti migrace license server
