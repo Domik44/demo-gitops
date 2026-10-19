@@ -1,0 +1,60 @@
+# template pr bump verze
+# kroky:
+  # bump -> v kontejneru s gitem naklonuje dmeo-gitops a prepise newTag -> pushne
+  # smokre-test -> zavola predchozi sablonu skrz templateRef aby overil nasazeni
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: dawiso-demo-update-version-template
+  namespace: argo
+spec:
+  entrypoint: main
+  arguments:
+    parameters:
+      - name: env
+        value: dev
+        enum: [dev, prod]
+      - name: version
+  templates:
+    - name: main
+      steps:
+        - - name: bump # vola template bump z tohoto filu
+            template: bump
+        - - name: smoke-test # vola template smoke-test z jineho filu
+            templateRef:
+              name: dawiso-demo-smoke-test-template
+              template: smoke-test
+            arguments:
+              parameters:
+                - name: env
+                  value: "{{workflow.parameters.env}}"
+                - name: version
+                  value: "{{workflow.parameters.version}}"
+    - name: bump
+      container:
+        image: alpine:3.22
+        command: [sh, -c]
+        env:
+          - name: GITHUB_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: github-token-secret
+                key: token
+          - name: REPO
+            value: github.com/Domik44/demo-gitops.git
+        args: 
+          - |
+            set -e
+            apk add --no-cache git yq > /dev/null
+            git clone "https://x-access-token:${GITHUB_TOKEN}@${REPO}" repo
+            cd repo
+            FILE=kustomize/demo/overlays/{{workflow.parameters.env}}/kustomization.yaml
+            yq -i '.images[0].newTag = "{{workflow.parameters.version}}"' "$FILE"
+            if git diff --quiet; then
+              echo "Overlay uz je na verzi {{workflow.parameters.version}}, neni co commitovat."
+              exit 0
+            fi
+            git diff
+            git -c user.name=argo-bot -c user.email=argo-bot@example.invalid \
+              commit -am "build: automatic update of demo-{{workflow.parameters.env}} to {{workflow.parameters.version}}"
+            git push

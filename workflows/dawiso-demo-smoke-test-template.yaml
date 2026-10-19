@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: dawiso-demo-smoke-test-template
+  namespace: argo
+spec:
+  entrypoint: smoke-test # vstupni bod wf, rika, zaciname jmenovanou sablonou
+  arguments: # definice vstupnich argumentu
+    parameters: # zadefinovali jsme dva params, env param s definovanym oborem hodnot a version
+      - name: env
+        value: dev
+        enum: [dev, prod]
+      - name: version
+  templates: # definice template
+    - name: smoke-test
+      inputs:
+        parameters:
+          - name: env
+          - name: version
+      retryStrategy:
+        limit: "6" # rika kolik mame max opakovani
+        retryPolicy: Always # opakujeme pri jakekoliv chybe
+        backoff: 
+          duration: "10s"
+          factor: "2"
+          maxDuration: "5m" # celkem max 5 minut
+      container: # proc kontejner? protoze kazde spusteni wf je kontejner ve vlastnim podu, ktery pak zustava v clusteru !
+        image: curlimages/curl:8.11.1
+        command: [sh, -c] # shell command s parametrem -c --> to same jako v dockerfilu entrypoint -> -c znamena spust text za tim jako skript
+        args: # argumenty co se predavaji commandu
+          - | # tohle v yaml rika ze vsechny radky pod timto se budou brat jako jeden viceradkovy string -> cool
+            URL=http://dawiso-demo-service.demo-{{inputs.parameters.env}}.svc.cluster.local/
+            echo "GET $URL"
+            BODY=$(curl -fsS "$URL")
+            echo "$BODY"
+            echo "$BODY" | grep -q '"version":"{{inputs.parameters.version}}"'
